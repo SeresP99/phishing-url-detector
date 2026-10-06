@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import re
+import tldextract
 from collections import Counter
 from urllib.parse import urlparse
 
@@ -83,9 +84,10 @@ def extract_features(url: str) -> dict[str, float]:
     query = parsed.query or ""
     full = raw.lower()
 
-    labels = [part for part in hostname.split(".") if part]
-    subdomain_count = max(len(labels) - 2, 0)
-    registrable = ".".join(labels[-2:]) if len(labels) >= 2 else hostname
+    extracted = tldextract.extract(hostname)
+    registrable = extracted.top_domain_under_public_suffix
+    subdomain = extracted.subdomain
+    subdomain_count = float(len([part for part in subdomain.split(".") if part]))
 
     brand_in_subdomain = 0
     for brand in BRANDS:
